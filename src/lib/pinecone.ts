@@ -1,7 +1,8 @@
 import {
-  PineconeClient,
+  Pinecone,
   Vector,
   utils as PineconeUtils,
+  PineconeRecord,
 } from "@pinecone-database/pinecone";
 import { downloadFromS3 } from "./s3-server";
 import { PDFLoader } from "langchain/document_loaders/fs/pdf";
@@ -13,12 +14,11 @@ import {
 import { getEmbeddings } from "./embeddings";
 import { convertToAscii } from "./utils";
 
-let pinecone: PineconeClient | null = null;
+let pinecone: Pinecone | null = null;
 
-export const getPineconeClient = async () => {
+export const getPineconeClient = () => {
   if (!pinecone) {
-    pinecone = new PineconeClient();
-    await pinecone.init({
+    pinecone = new Pinecone({
       environment: process.env.PINECONE_ENVIRONMENT!,
       apiKey: process.env.PINECONE_API_KEY!,
     });
@@ -40,6 +40,7 @@ export async function loadS3IntoPinecone(fileKey: string) {
   if (!file_name) {
     throw new Error("could not download from s3");
   }
+  console.log("loading pdf into memory" + file_name);
   const loader = new PDFLoader(file_name);
   const pages = (await loader.load()) as PDFPage[];
 
@@ -51,11 +52,11 @@ export async function loadS3IntoPinecone(fileKey: string) {
 
   // 4. upload to pinecone
   const client = await getPineconeClient();
-  const pineconeIndex = client.Index("chatpdf");
+  const pineconeIndex = await client.index("chatpdf");
+  const namespace = pineconeIndex.namespace(convertToAscii(fileKey));
 
   console.log("inserting vectors into pinecone");
-  const namespace = convertToAscii(fileKey);
-  PineconeUtils.chunkedUpsert(pineconeIndex, vectors, namespace, 10);
+  await namespace.upsert(vectors);
 
   return documents[0];
 }
@@ -72,7 +73,7 @@ async function embedDocument(doc: Document) {
         text: doc.metadata.text,
         pageNumber: doc.metadata.pageNumber,
       },
-    } as Vector;
+    } as PineconeRecord;
   } catch (error) {
     console.log("error embedding document", error);
     throw error;
