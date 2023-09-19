@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.414.0",
     "@clerk/nextjs": "^4.23.3",
     "@neondatabase/serverless": "^0.6.0",
     "@pinecone-database/doc-splitter": "latest",
