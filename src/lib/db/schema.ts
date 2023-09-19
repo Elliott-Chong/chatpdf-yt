@@ -41,7 +41,7 @@ export const userSubscriptions = pgTable("user_subscriptions", {
     length: 256,
   }).unique(),
   stripePriceId: varchar("stripe_price_id", { length: 256 }),
-  stripeCurrentPeriodEnd: timestamp("stripe_current_period_end"),
+  stripeCurrentPeriodEnd: timestamp("stripe_current_period_ended_at"),
 });
 
 // drizzle-orm
