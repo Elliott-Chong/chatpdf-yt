@@ -1,6 +1,4 @@
 import { Pinecone, PineconeRecord } from "@pinecone-database/pinecone";
-import { downloadFromS3 } from "./s3-server";
-import { PDFLoader } from "langchain/document_loaders/fs/pdf";
 import md5 from "md5";
 import {
   Document,
@@ -8,6 +6,7 @@ import {
 } from "@pinecone-database/doc-splitter";
 import { getEmbeddings } from "./embeddings";
 import { convertToAscii } from "./utils";
+import { S3Loader } from "langchain/document_loaders/web/s3";
 
 export const getPineconeClient = () => {
   return new Pinecone({
@@ -26,12 +25,21 @@ type PDFPage = {
 export async function loadS3IntoPinecone(fileKey: string) {
   // 1. obtain the pdf -> downlaod and read from pdf
   console.log("downloading s3 into file system");
-  const file_name = await downloadFromS3(fileKey);
-  if (!file_name) {
-    throw new Error("could not download from s3");
-  }
-  console.log("loading pdf into memory" + file_name);
-  const loader = new PDFLoader(file_name);
+
+  const loader = new S3Loader({
+    bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME!,
+    key: file_key,
+    s3Config: {
+        region: "ap-southeast-1",
+        credentials: {
+          accessKeyId: process.env.NEXT_PUBLIC_S3_ACCESS_KEY_ID!,
+          secretAccessKey: process.env.NEXT_PUBLIC_S3_SECRET_ACCESS_KEY!,
+      },
+    },
+    unstructuredAPIURL: process.env.UNSTRUCTURED_API_URL!,
+    unstructuredAPIKey: process.env.UNSTRUCTURED_API_KEY!,
+  });
+
   const pages = (await loader.load()) as PDFPage[];
 
   // 2. split and segment the pdf
