@@ -1,0 +1,10 @@
+{
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+  "explorer.compactFolders": true,
+  "tailwindCSS.emmetCompletions": true
+}
