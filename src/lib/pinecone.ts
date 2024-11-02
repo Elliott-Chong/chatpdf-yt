@@ -9,12 +9,19 @@ import {
 import { getEmbeddings } from "./embeddings";
 import { convertToAscii } from "./utils";
 
-export const getPineconeClient = () => {
-  return new Pinecone({
-    environment: process.env.PINECONE_ENVIRONMENT!,
-    apiKey: process.env.PINECONE_API_KEY!,
-  });
-};
+// export const getPineconeClient = () => {
+//   return new Pinecone({
+//     environment: process.env.PINECONE_ENVIRONMENT!,
+//     apiKey: process.env.PINECONE_API_KEY!,
+//   });
+// };
+const key = process.env.PINECONE_API_KEY;
+if (!key){
+  console.log("KEY EMPTY");
+}
+const pc = new Pinecone({
+  apiKey: key!,
+});
 
 type PDFPage = {
   pageContent: string;
@@ -41,8 +48,8 @@ export async function loadS3IntoPinecone(fileKey: string) {
   const vectors = await Promise.all(documents.flat().map(embedDocument));
 
   // 4. upload to pinecone
-  const client = await getPineconeClient();
-  const pineconeIndex = await client.index("chatpdf");
+  // const client = await getPineconeClient();
+  const pineconeIndex = await pc.index("chatpdf-yt");
   const namespace = pineconeIndex.namespace(convertToAscii(fileKey));
 
   console.log("inserting vectors into pinecone");

@@ -7,11 +7,16 @@ export async function getMatchesFromEmbeddings(
   fileKey: string
 ) {
   try {
-    const client = new Pinecone({
-      environment: process.env.PINECONE_ENVIRONMENT!,
-      apiKey: process.env.PINECONE_API_KEY!,
+    // const client = new Pinecone({
+    //   environment: process.env.PINECONE_ENVIRONMENT!,
+    //   apiKey: process.env.PINECONE_API_KEY!,
+    // });
+
+    const pc = new Pinecone({
+      apiKey: process.env.PINECONE_API_KEY!!,
     });
-    const pineconeIndex = await client.index("chatpdf");
+
+    const pineconeIndex = await pc.index("chatpdf-yt");
     const namespace = pineconeIndex.namespace(convertToAscii(fileKey));
     const queryResult = await namespace.query({
       topK: 5,
