@@ -18,9 +18,7 @@ type Props = {
 const ChatPage = async (props: Props) => {
   const params = await props.params;
 
-  const {
-    chatId
-  } = params;
+  const { chatId } = params;
 
   const { userId } = await auth();
   if (!userId) {
@@ -38,10 +36,10 @@ const ChatPage = async (props: Props) => {
   const isPro = await checkSubscription();
 
   return (
-    <div className="flex max-h-screen overflow-scroll">
-      <div className="flex w-full max-h-screen overflow-scroll">
+    <div className="flex h-screen overflow-scroll">
+      <div className="flex w-full h-screen overflow-scroll">
         {/* chat sidebar */}
-        <div className="flex-[1] max-w-xs">
+        <div className="flex-[1] h-screen max-w-xs">
           <ChatSideBar chats={_chats} chatId={parseInt(chatId)} isPro={isPro} />
         </div>
         {/* pdf viewer */}
