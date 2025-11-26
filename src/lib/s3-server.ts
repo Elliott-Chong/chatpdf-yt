@@ -1,5 +1,6 @@
 import { S3 } from "@aws-sdk/client-s3";
 import fs from "fs";
+import path from "path";
 export async function downloadFromS3(file_key: string): Promise<string> {
   return new Promise(async (resolve, reject) => {
     try {
@@ -16,7 +17,12 @@ export async function downloadFromS3(file_key: string): Promise<string> {
       };
 
       const obj = await s3.getObject(params);
-      const file_name = `/tmp/elliott${Date.now().toString()}.pdf`;
+     const tmpDir = '/tmp';
+      // Ensure /tmp directory exists , this is the solution for this error 
+      if (!fs.existsSync(tmpDir)) {
+        fs.mkdirSync(tmpDir);
+      }
+      const file_name = path.join(tmpDir, `${Date.now().toString()}.pdf`);
 
       if (obj.Body instanceof require("stream").Readable) {
         // AWS-SDK v3 has some issues with their typescript definitions, but this works
